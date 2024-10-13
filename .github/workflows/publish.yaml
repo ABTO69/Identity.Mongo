@@ -1,6 +1,9 @@
 ﻿name: Publish Nuget Package
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '*.*.**'
   
 jobs:
   publish_nuget_package:
@@ -8,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v4
+      - name: Set Version
+        run: |
+          sed -i -e 's/{{Version}}/${{ github.ref_name }}/' ./lib/Identity.Mongo.csproj
       - name: Pack
         run: |
           dotnet pack ./lib/Identity.Mongo -c Release -o .output
