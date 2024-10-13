@@ -1,0 +1,24 @@
+# Ignore build outputs
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider/JetBrains specific files
+.idea/
+*.sln.iml
+*.dotSettings.user
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+
+# Visual Studio specific files
+.vscode/
+.vs/
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
