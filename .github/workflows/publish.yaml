@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set Version
         run: |
-          sed -i -e 's/{{Version}}/${{ github.ref_name }}/' ./lib/Identity.Mongo.csproj
+          sed -i -e 's/{{Version}}/${{ github.ref_name }}/' ./lib/Identity.Mongo/Identity.Mongo.csproj
       - name: Pack
         run: |
           dotnet pack ./lib/Identity.Mongo -c Release -o .output
