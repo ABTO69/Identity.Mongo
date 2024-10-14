@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         
         <PackageId>Identity.Mongo</PackageId>
-        <Version>1</Version>
+        <Version>{{Version}}</Version>
         <Authors>Abdullah Towait</Authors>
     </PropertyGroup>
 

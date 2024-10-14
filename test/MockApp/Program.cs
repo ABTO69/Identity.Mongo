@@ -4,7 +4,7 @@ using MockApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMongoDb<AppDbContext>("mongodb+srv://abdo:dEHOB2NydwJ5gKtI@test.rydlt.mongodb.net/?retryWrites=true&w=majority&appName=test","test");
+builder.Services.AddMongoDb<AppDbContext>("","");
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddMongoStores()
