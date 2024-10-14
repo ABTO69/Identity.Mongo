@@ -40,7 +40,7 @@ public class MockApp(string mongoConnection) : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            services.AddMongoDb<MongoDb, IdentityUser>(mongoConnection, "identityTest");
+            services.AddMongoDb<AppDbContext>(mongoConnection, "identityTest");
         });
     }
 }

@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
+      <PackageReference Include="MongoDB.Driver" Version="2.29.0" />
     </ItemGroup>
 
     <ItemGroup>

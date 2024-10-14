@@ -1,51 +1,27 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 
 namespace Identity.Mongo;
 
 public static class DbBuilder
 {
-    public static void AddMongoDb<TDb, TUser>(
+    public static void AddMongoDb<TDb>(
         this IServiceCollection services, 
         string connectionString,
-        string databaseName, 
-        string userCollectionName = "i_users",
-        string roleCollectionName = "i_roles") 
-        where TDb : class
+        string databaseName) 
+        where TDb : MongoDbContext
     {
-        if (!IsSubclassOfRawGeneric(typeof(MongoIdentityDb<>), typeof(TDb)))
-        {
-            throw new ArgumentException($"The database class of type: {typeof(TDb)} must be a subclass of MongoIdentityDb<T>");
-        }
-        
-        var options = new DbOptions
-        {
-            ConnectionString = connectionString,
-            DatabaseName = databaseName,
-            UserCollectionName = userCollectionName,
-            RoleCollectionName = roleCollectionName
-        };
+        services.AddSingleton<IMongoClient>(_ => new MongoClient(connectionString));
 
-        services.AddSingleton(options);
-        
-        services.AddScoped(_ => new MongoIdentityDb<TUser>(options));
-        services.AddScoped(_ => Activator.CreateInstance(typeof(TDb), options)!);
+        services.AddScoped<MongoDbContext>(sp =>
+        {
+            var mongoClient = sp.GetRequiredService<IMongoClient>();
+            var context = Activator.CreateInstance(typeof(TDb), databaseName) as TDb
+                          ?? throw new InvalidOperationException($"Could not create instance of {typeof(TDb).Name}");
 
-        Console.WriteLine();
+            context.Initialize(mongoClient);
+
+            return context;
+        });
     }
-    
-    private static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
-    {
-        while (toCheck != null && toCheck != typeof(object))
-        {
-            var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
-            if (generic == cur)
-            {
-                return true;
-            }
-
-            if (toCheck.BaseType != null) toCheck = toCheck.BaseType;
-        }
-        return false;
-    }
-
 }

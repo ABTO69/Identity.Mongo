@@ -4,12 +4,12 @@ using MongoDB.Driver;
 
 namespace Identity.Mongo;
 
-public class MongoUserStore<TUser, TKey>(MongoIdentityDb<TUser> db) : IUserStore<TUser>
+public class MongoUserStore<TUser, TKey>(MongoDbContext ctx) : IUserStore<TUser>
     where TUser : IdentityUser<TKey>
     where TKey : IEquatable<TKey>
 {
-    private readonly IMongoCollection<TUser> _users = db.Users;
-
+    private readonly IMongoCollection<TUser> _users = ctx.GetCollection<TUser>("i_users");
+    
     public void Dispose() { }
 
     public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken)
