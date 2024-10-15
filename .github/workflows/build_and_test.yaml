@@ -1,9 +1,9 @@
-﻿name: Publish Nuget Package
+﻿name: Build & Test
 
 on: pull_request
 
 jobs:
-  publish_nuget_package:
+  build_and_test:
     name: Publish
     runs-on: ubuntu-latest
     steps:
