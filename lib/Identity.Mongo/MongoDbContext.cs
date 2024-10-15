@@ -1,11 +1,13 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.AspNetCore.Identity;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Identity.Mongo;
 
 public abstract class MongoDbContext(string databaseName)
 {
     private IMongoClient MongoClient { get; set; } = null!;
-    protected IMongoDatabase Database { get; private set; } = null!;
+    protected internal IMongoDatabase Database { get; private set; } = null!;
 
     public void Initialize(IMongoClient mongoClient)
     {
@@ -22,7 +24,7 @@ public abstract class MongoDbContext(string databaseName)
 
     protected internal IMongoCollection<T> GetCollection<T>(string collectionName)
     {
-        return Database?.GetCollection<T>(collectionName) 
+        return Database.GetCollection<T>(collectionName) 
                ?? throw new NullReferenceException("the database is null");
     }
 }

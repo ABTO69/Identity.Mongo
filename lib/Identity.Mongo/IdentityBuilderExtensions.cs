@@ -7,18 +7,24 @@ public static class IdentityBuilderExtensions
 {
     public static IdentityBuilder AddMongoStores(this IdentityBuilder identityBuilder)
     {
-        var userType = typeof(MongoUserStore<,>).MakeGenericType(
+        var userStoreType = typeof(MongoUserStore<,,>).MakeGenericType(
             identityBuilder.UserType,
+            identityBuilder.RoleType,
             identityBuilder.UserType.GenericTypeArguments.Length == 1
                 ? identityBuilder.UserType.GenericTypeArguments[0]
                 : identityBuilder.UserType.BaseType?.GenericTypeArguments[0]
                   ?? throw new ArgumentException("bad user type, couldn't find key")
         );
-        // roleStoreType = typeof(RoleStore<,,>).MakeGenericType(roleType, keyType);
         
         identityBuilder.Services.AddScoped(
-            typeof(IUserStore<>).MakeGenericType(identityBuilder.UserType), userType);
-        identityBuilder.Services.AddScoped<IRoleStore<IdentityRole>, MongoRoleStore>();
+            typeof(IUserStore<>).MakeGenericType(identityBuilder.UserType),
+            userStoreType
+        );
+        
+        identityBuilder.Services.AddScoped(
+            typeof(IRoleStore<>).MakeGenericType(identityBuilder.RoleType),
+            typeof(MongoRoleStore<>).MakeGenericType(identityBuilder.RoleType)
+        );
         
         return identityBuilder;
     }

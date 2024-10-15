@@ -4,11 +4,13 @@ using MongoDB.Driver;
 
 namespace Identity.Mongo;
 
-public class MongoUserStore<TUser, TKey>(MongoDbContext ctx) : IUserStore<TUser>
+public class MongoUserStore<TUser, TRole, TKey>(MongoDbContext ctx, IRoleStore<TRole> roleStore) : IUserRoleStore<TUser>
     where TUser : IdentityUser<TKey>
     where TKey : IEquatable<TKey>
+    where TRole : IdentityRole
 {
     private readonly IMongoCollection<TUser> _users = ctx.GetCollection<TUser>("i_users");
+    private readonly IMongoCollection<UserRole<TKey>> _userRoles = ctx.Database.GetCollection<UserRole<TKey>>("i_user_roles");
     
     public void Dispose() { }
 
@@ -139,5 +141,103 @@ public class MongoUserStore<TUser, TKey>(MongoDbContext ctx) : IUserStore<TUser>
             .FindAsync(x => x.NormalizedUserName == normalizedUserName, cancellationToken: cancellationToken);
         
         return user.FirstOrDefault(cancellationToken: cancellationToken);
+    }
+
+    public async Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        ArgumentNullException.ThrowIfNull(roleName, nameof(roleName));
+
+        var role = await roleStore.FindByNameAsync(roleName, cancellationToken);
+        if (role == null)
+        {
+            throw new Exception($"role not found: {roleName}");
+        }
+        
+        await _userRoles.InsertOneAsync(new UserRole<TKey>
+        {
+            UserId = user.Id,
+            RoleId = role.Id
+        }, cancellationToken: cancellationToken);
+    }
+
+    public async Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        ArgumentNullException.ThrowIfNull(roleName, nameof(roleName));
+        
+        var role = await roleStore.FindByNameAsync(roleName, cancellationToken);
+        if (role == null)
+        {
+            throw new Exception($"role not found: {roleName}");
+        }
+        
+        await _userRoles.DeleteOneAsync(
+            x => x.UserId.Equals(user.Id) && x.RoleId.Equals(role.Id),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        
+        var userRoles = await _userRoles
+            .Find(x => x.UserId.Equals(user.Id))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var roleIds = userRoles.Select(ur => ur.RoleId).ToHashSet();
+        var roles = new List<string>();
+
+        foreach (var roleId in roleIds)
+        {
+            var role = await roleStore.FindByIdAsync(roleId, cancellationToken);
+            if (role == null)
+            {
+                throw new Exception($"Role not found: {roleId}");
+            }
+            roles.Add(role.Name!);
+        }
+
+        return roles;
+    }
+
+    public async Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        ArgumentNullException.ThrowIfNull(roleName, nameof(roleName));
+        
+        var role = await roleStore.FindByNameAsync(roleName, cancellationToken);
+        if (role == null)
+        {
+            return false;
+        }
+        
+        var userRole = await _userRoles
+            .Find(x => x.UserId.Equals(user.Id) && x.RoleId == role.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return userRole != null;
+    }
+
+    public async Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(roleName, nameof(roleName));
+        
+        var role = await roleStore.FindByNameAsync(roleName, cancellationToken);
+        if (role == null)
+        {
+            throw new Exception($"role not found: {roleName}");
+        }
+        
+        var roleUsers = await _userRoles
+            .Find(x => x.RoleId.Equals(role.Id))
+            .ToListAsync(cancellationToken);
+        
+        var userIds = roleUsers.Select(ru => ru.UserId).ToHashSet();
+        var users = await _users
+            .Find(u => userIds.Contains(u.Id))
+            .ToListAsync(cancellationToken);
+
+        return users;
     }
 }
