@@ -19,7 +19,7 @@ public static class DbBuilder
             var context = Activator.CreateInstance(typeof(TDb), databaseName) as TDb
                           ?? throw new InvalidOperationException($"Could not create instance of {typeof(TDb).Name}");
 
-            context.Initialize(mongoClient);
+            context.Initialize(mongoClient, databaseName);
 
             return context;
         });

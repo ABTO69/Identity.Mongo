@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
-using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 
 namespace Identity.Mongo;
 
-public abstract class MongoDbContext(string databaseName)
+public abstract class MongoDbContext
 {
     private IMongoClient MongoClient { get; set; } = null!;
     protected internal IMongoDatabase Database { get; private set; } = null!;
 
-    public void Initialize(IMongoClient mongoClient)
+    public void Initialize(IMongoClient mongoClient, string databaseName)
     {
         MongoClient = mongoClient;
         

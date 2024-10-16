@@ -4,7 +4,7 @@ using MongoDB.Driver;
 
 namespace MockApp;
 
-public class AppDbContext(string databaseName) : MongoDbContext(databaseName)
+public class AppDbContext : MongoDbContext
 {
     protected override void ConfigureCollections()
     {
