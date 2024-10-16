@@ -16,10 +16,10 @@ public static class DbBuilder
         services.AddScoped<MongoDbContext>(sp =>
         {
             var mongoClient = sp.GetRequiredService<IMongoClient>();
-            var context = Activator.CreateInstance(typeof(TDb), databaseName) as TDb
+            var context = Activator.CreateInstance(typeof(TDb)) as TDb
                           ?? throw new InvalidOperationException($"Could not create instance of {typeof(TDb).Name}");
 
-            context.Initialize(mongoClient);
+            context.Initialize(mongoClient, databaseName);
 
             return context;
         });
