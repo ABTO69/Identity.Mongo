@@ -7,6 +7,8 @@ public static class IdentityBuilderExtensions
 {
     public static IdentityBuilder AddMongoStores(this IdentityBuilder identityBuilder)
     {
+        ArgumentNullException.ThrowIfNull(identityBuilder.RoleType);
+
         var userStoreType = typeof(MongoUserStore<,,>).MakeGenericType(
             identityBuilder.UserType,
             identityBuilder.RoleType,

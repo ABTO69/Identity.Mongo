@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Test.Identity.Mongo;
 
-public class IUserStoreTests(IntegrationFixture integrationFixture) : IntegrationTest(integrationFixture)
+public class UserStoreTests(IntegrationFixture integrationFixture) : IntegrationTest(integrationFixture)
 {
     [Fact]
     public async Task crud_operations()

@@ -9,7 +9,7 @@ public class MongoUserStore<TUser, TRole, TKey>(MongoDbContext ctx, IRoleStore<T
     where TKey : IEquatable<TKey>
     where TRole : IdentityRole
 {
-    private readonly IMongoCollection<TUser> _users = ctx.GetCollection<TUser>("i_users");
+    private readonly IMongoCollection<TUser> _users =  ctx.Database.GetCollection<TUser>("i_users");
     private readonly IMongoCollection<UserRole<TKey>> _userRoles = ctx.Database.GetCollection<UserRole<TKey>>("i_user_roles");
     
     public void Dispose() { }
